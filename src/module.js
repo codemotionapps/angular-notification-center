@@ -21,7 +21,8 @@
 
 	]).provider("notification", function(){
 		var getDeveloperNotifications,
-			loadMoreNotifications,
+			notificationsNumber,
+			getDeveloperUnseenNotificationsNumber,
 			seeNotifications,
 			newNotification,
 			showDesktopNotifications,
@@ -63,46 +64,53 @@
 		
 		this.loading = loading;
 		
-		newNotification = function(notification, scope, compile){
-			var tmp;
-			notification.ready = notificationToString(notification);
-			if(notification.hasOwnProperty('pushFront')){
-				if(notification.seen == "False"){
-					newNotifications = true;
-					unreadNotifications.plus1();
-				}
+		newNotification = function(notifications, scope, compile){
+			console.log( notifications);
+			for(var index = 0; index < notifications.length; index++){
+				var notification = notifications[index];
+				console.log(notification);
+				continue;
+				var tmp;
+				notification.ready = notificationToString(notification);
+				/*
+				if(notification.hasOwnProperty('pushFront')){
+					if(notification.seen == "False"){
+						newNotifications = true;
+						unreadNotifications.plus1();
+					}
 
-				notifications.unshift(notification);
-				if(!this.inlineNotification){
-					tmp = angular.element("<div></div>");
-					tmp.html($templateCache.get(NCSigleNTemlpateURL));
-					scope = $scope.$new();
-					scope.notification = notification;
-					compile(tmp)(scope);
-					var wtf = tmp.text().replace(/\s\s+/g, ' ');
-					new spawnNotification("Ora", wtf, $rootScope.clickNotification, disabledNotifications);
+					notifications.unshift(notification);
+					console.log(this.inlineNotification);
+					if(!this.inlineNotification){
+						tmp = angular.element("<div></div>");
+						tmp.html($templateCache.get(NCSigleNTemlpateURL));
+						scope = $scope.$new();
+						scope.notification = notification;
+						//compile(tmp)(scope);
+						var wtf = tmp.text().replace(/\s\s+/g, ' ');
+						new spawnNotification("Ora", wtf, $rootScope.clickNotification, disabledNotifications);
+					}else{
+						ngToast.create({
+							className: 'notifi-cell',
+							content: tmp.innerHTML
+						});
+						if(todoApp.user.getAttribute("notifications_sounds"))
+							ngAudio.play("sound/notification.wav");
+					}
 				}else{
-					ngToast.create({
-						className: 'notifi-cell',
-						content: tmp.innerHTML
-					});
-					if(todoApp.user.getAttribute("notifications_sounds"))
-						ngAudio.play("sound/notification.wav");
-				}
-			}else{
+				*/
 				notifications.push(notification);
+
 			}
-			if(notification.last){
-				console.log(notifications);
-				tmp = (parseInt(notification.unseen) || 0);
-				unreadNotifications.set(tmp);
-				if(tmp > 0){
-					newNotifications = true;
-				}
-				loading.set(false);
-			}
-			
+			loading.set(false);			
 		};
+
+		notificationsNumber = function(number){
+			unreadNotifications.set(number);
+			if(number > 0){
+				newNotifications = true;
+			}
+		}
 		
 		function noMoreNotifications(){
 			allNotificationsLoaded = true;
@@ -111,9 +119,10 @@
 			});
 		}
 		
+
 		this.setPermission = function(boolean){
 			if(boolean === true && permission !== true){
-				getDeveloperNotifications();
+				getDeveloperUnseenNotificationsNumber();
 			}
 			permission = boolean;
 		};
@@ -125,11 +134,11 @@
 		this.getDeveloperNotifications = function(func){
 			getDeveloperNotifications = func;
 		};
-		
-		this.loadMoreNotifications = function(func){
-			loadMoreNotifications = func;
+
+		this.getDeveloperUnseenNotificationsNumber = function(func){
+			getDeveloperUnseenNotificationsNumber = func;
 		};
-		
+				
 		this.seeNotifications = function(func){
 			seeNotifications = func;
 		};
@@ -152,7 +161,7 @@
 						return;
 					}
 					loading.set(true);
-					loadMoreNotifications(notifications.length);
+					getDeveloperNotifications(notifications.length);
 				},
 				seeNotifications: function(){
 					seeNotifications();
@@ -166,6 +175,7 @@
 				inlineNotification: this.inlineNotification, //{2}
 				setPermission: this.setPermission, //{2}
 				newNotification: newNotification,
+				notificationsNumber : notificationsNumber,
 				noMoreNotifications: noMoreNotifications,
 				loading: loading,
 				unreadNotifications: unreadNotifications
