@@ -25,26 +25,20 @@
 			getDeveloperUnseenNotificationsNumber,
 			seeNotifications,
 			newNotification,
+			setNotifications,
 			showDesktopNotifications,
 			permission = false,
 			allNotificationsLoaded = false,
-			newNotifications = false,
 			notificationsOpen = false,
+			loaded = false,
+			unreadNotifications = {
+				'value' : 0
+			},
 			noMoreNotificationsCallbacks = [],
 			notifications = [],
 			disabledNotifications = (localStorage.getItem('disabledNotifications') === "true"),
 			desktopNotifications = (("Notification" in window) && Notification !== undefined && Notification.permission === "granted") ? true : false;
-		
-		var unreadNotifications = {
-			value: 0,
-			set: function(value){
-				this.value = value;
-			},
-			plus1: function(){
-				this.value++;
-			}
-		};
-		
+				
 		var loading = {
 			value: false,
 			set: function(value){
@@ -64,52 +58,48 @@
 		
 		this.loading = loading;
 		
-		newNotification = function(notifications, scope, compile){
-			console.log( notifications);
-			for(var index = 0; index < notifications.length; index++){
-				var notification = notifications[index];
-				console.log(notification);
-				continue;
-				var tmp;
+		setNotifications = function(notifications_){
+			for(var index = 0; index < notifications_.length; index++){
+				var notification = notifications_[index];
 				notification.ready = notificationToString(notification);
-				/*
-				if(notification.hasOwnProperty('pushFront')){
-					if(notification.seen == "False"){
-						newNotifications = true;
-						unreadNotifications.plus1();
-					}
-
-					notifications.unshift(notification);
-					console.log(this.inlineNotification);
-					if(!this.inlineNotification){
-						tmp = angular.element("<div></div>");
-						tmp.html($templateCache.get(NCSigleNTemlpateURL));
-						scope = $scope.$new();
-						scope.notification = notification;
-						//compile(tmp)(scope);
-						var wtf = tmp.text().replace(/\s\s+/g, ' ');
-						new spawnNotification("Ora", wtf, $rootScope.clickNotification, disabledNotifications);
-					}else{
-						ngToast.create({
-							className: 'notifi-cell',
-							content: tmp.innerHTML
-						});
-						if(todoApp.user.getAttribute("notifications_sounds"))
-							ngAudio.play("sound/notification.wav");
-					}
-				}else{
-				*/
 				notifications.push(notification);
-
 			}
-			loading.set(false);			
+			loading.set(false);
+			loaded = true;
+		};
+
+		newNotification = function(notification, scope, $compile, ngToast, $sce){
+			console.log(notification);
+			++unreadNotifications.value;
+			notification.ready = notificationToString(notification);
+			notifications.unshift(notification);
+
+			if(showDesktopNotifications){
+				var template = angular.element("<div data-ng-include=\"'" + NCSigleNTemlpateURL + "'\"></div>");
+				var scope_ = scope.$new();
+				scope_.item = notification;
+				$compile(template)(scope_);
+				console.log(template);
+				//var wtf = template.text().replace(/\s\s+/g, ' ');
+				template = "OTVORI SI TABA CHE NE MOJEM DA PROGRAMIRAME";
+				new spawnNotification("Ora", template, scope.clickNotification, disabledNotifications);
+			}else{
+				/*
+				//notifications that is fake
+				ngToast.create({
+					className: 'notifi-cell',
+					content: tmp.innerHTML
+				});
+
+				if(todoApp.user.getAttribute("notifications_sounds"))
+					ngAudio.play("sound/notification.wav");
+				*/
+			}
+		
 		};
 
 		notificationsNumber = function(number){
-			unreadNotifications.set(number);
-			if(number > 0){
-				newNotifications = true;
-			}
+			unreadNotifications.value = number;
 		}
 		
 		function noMoreNotifications(){
@@ -150,11 +140,13 @@
 		this.$get = function(){
 			//Let's get the first batch of notifications, this is being executed at angular.run();
 			return {
-				notifications: function(){
-					return notifications;
-				},
+				notifications: notifications,
+				loaded : loaded,
 				allNotificationsLoaded: function(){ //{1}
 					return allNotificationsLoaded;
+				},
+				loadingTrue: function(){
+					loading.set(true);					
 				},
 				loadMoreNotifications: function(){
 					if(loading.get()){
@@ -169,25 +161,47 @@
 						if(notifications[index].seen == "False")
 							notifications[index].seen = "True";
 					}
-					unreadNotifications.set(0);
+					unreadNotifications.value = 0;
 				},
 				noMoreNotificationsAdd: this.noMoreNotificationsAdd, //{2}
 				inlineNotification: this.inlineNotification, //{2}
 				setPermission: this.setPermission, //{2}
 				newNotification: newNotification,
+				setNotifications : setNotifications,
 				notificationsNumber : notificationsNumber,
 				noMoreNotifications: noMoreNotifications,
 				loading: loading,
 				unreadNotifications: unreadNotifications
 			};
 		};
-	}).directive("notificationCenter", ['notification', function(notification){
+	}).directive("notificationsCenter", ['notification', function(notification){
+		return {
+			restrict: "A",
+			scope: false,
+			link: function(scope, el, attrs){
+				scope.noMoreNotifications = false;
+				notification.noMoreNotificationsAdd(function(){
+					scope.scrollMore = true;
+					scope.noMoreNotifications = true;
+					if (!scope.$$phase) scope.$apply();
+				});
+				scope.notifications = notification.notifications;
+				scope.loadMoreNotifications = notification.loadMoreNotifications;
+				scope.unreadNotifications = notification.unreadNotifications;
+				scope.loaded = notification.loaded;
+
+				scope.openIt = function(){
+					notification.seeNotifications();
+				};
+			}
+		};
+	}]).directive("notificationCenterWrap", ['notification', function(notification){
 		return {
 			restrict: "A",
 			templateUrl: NCTemplateURL,
 			scope: false,
-			link: function(scope, el, attrs){
-				notification.seeNotifications();
+			link: function(scope, el,attrs){
+
 			}
 		};
 	}]).directive("singleNotification", ['notification', function(notification){
