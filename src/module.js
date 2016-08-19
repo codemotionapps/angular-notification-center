@@ -68,32 +68,39 @@
 			loaded = true;
 		};
 
-		newNotification = function(notification, scope, $compile, ngToast, $sce){
-			console.log(notification);
+		newNotification = function(notification, scope, $compile, ngToast, $templateCache){
 			++unreadNotifications.value;
 			notification.ready = notificationToString(notification);
 			notifications.unshift(notification);
 
 			if(showDesktopNotifications){
-				var template = angular.element("<div data-ng-include=\"'" + NCSigleNTemlpateURL + "'\"></div>");
 				var scope_ = scope.$new();
 				scope_.item = notification;
-				$compile(template)(scope_);
-				console.log(template);
-				//var wtf = template.text().replace(/\s\s+/g, ' ');
-				template = "OTVORI SI TABA CHE NE MOJEM DA PROGRAMIRAME";
-				new spawnNotification("Ora", template, scope.clickNotification, disabledNotifications);
-			}else{
-				/*
-				//notifications that is fake
-				ngToast.create({
-					className: 'notifi-cell',
-					content: tmp.innerHTML
-				});
+				var template = angular.element("<div></div>");
+				template.html($templateCache.get(NCSigleNTemlpateURL));
+				template = $compile(template)(scope_)
+				setTimeout(function(){
+					template = template.text().trim();
+					template = template.replace(/\s\s+/g, ' ');
+					new spawnNotification("Ora", template, scope.clickNotification, disabledNotifications);
+				}, 200)
 
-				if(todoApp.user.getAttribute("notifications_sounds"))
-					ngAudio.play("sound/notification.wav");
-				*/
+			}else{
+				//notification that is fake
+				var scope_ = scope.$new();
+				scope_.item = notification;
+				var template = angular.element("<div></div>");
+				template.html($templateCache.get(NCSigleNTemlpateURL));
+				template = $compile(template)(scope_)
+				setTimeout(function(){
+					ngToast.create({
+						className: 'notifi-cell',
+						content: template[0].outerHTML
+					});
+				}, 200)
+
+				//if(todoApp.user.getAttribute("notifications_sounds"))
+				//	ngAudio.play("sound/notification.wav");
 			}
 		
 		};
@@ -202,6 +209,14 @@
 			scope: false,
 			link: function(scope, el,attrs){
 
+			}
+		};
+	}]).directive("notification", ['notification', function(notification){
+		return {
+			templateUrl: NCSigleNTemlpateURL,
+			scope: false,
+			link: function(scope, el,attrs){
+				el.addClass("hidden");
 			}
 		};
 	}]).directive("singleNotification", ['notification', function(notification){
