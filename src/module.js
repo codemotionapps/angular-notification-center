@@ -62,8 +62,9 @@
 			for(var index = 0; index < notifications_.length; index++){
 				var notification = notifications_[index];
 				notification.ready = notificationToString(notification);
-				notifications.push(notification);
-			}
+				if(notifications.length == 0 || notifications[0].time != notification.time)
+					notifications.push(notification);
+				}
 			loading.set(false);
 			loaded = true;
 		};
@@ -78,7 +79,7 @@
 				scope_.item = notification;
 				var template = angular.element("<div></div>");
 				template.html($templateCache.get(NCSigleNTemlpateURL));
-				template = $compile(template)(scope_)
+				template = $compile(template)(scope_);
 				setTimeout(function(){
 					template = template.text().trim();
 					template = template.replace(/\s\s+/g, ' ');
