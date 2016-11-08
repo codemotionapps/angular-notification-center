@@ -36,7 +36,7 @@
 			},
 			noMoreNotificationsCallbacks = [],
 			notifications = [],
-			disabledNotifications = (localStorage.getItem('disabledNotifications') === "true"),
+			disabledNotifications = (localStorage !== undefined ? localStorage.getItem('disabledNotifications') === "true" : true), //Private browsing in Safari
 			desktopNotifications = (("Notification" in window) && Notification !== undefined && Notification.permission === "granted") ? true : false;
 				
 		var loading = {

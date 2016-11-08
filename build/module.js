@@ -1,7 +1,7 @@
 /*!
  * angular-notification-center
  * https://github.com/codemotionapps/angular-notification-center
- * Version: 0.0.1 - 2016-10-03T09:36:16.487Z
+ * Version: 0.0.1 - 2016-11-08T02:45:10.716Z
  * License: GPL-3.0
  */
 
@@ -44,7 +44,7 @@
 			},
 			noMoreNotificationsCallbacks = [],
 			notifications = [],
-			disabledNotifications = (localStorage.getItem('disabledNotifications') === "true"),
+			disabledNotifications = (localStorage !== undefined ? localStorage.getItem('disabledNotifications') === "true" : true), //Private browsing in Safari
 			desktopNotifications = (("Notification" in window) && Notification !== undefined && Notification.permission === "granted") ? true : false;
 				
 		var loading = {
