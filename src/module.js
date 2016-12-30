@@ -199,7 +199,7 @@
 				scope.loaded = notification.loaded;
 
 				scope.openIt = function(){
-					notification.seeNotifications();
+					setTimeout(notification.seeNotifications, 3000);
 				};
 			}
 		};
