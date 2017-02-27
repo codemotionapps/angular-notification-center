@@ -64,7 +64,9 @@
 				notification.ready = notificationToString(notification);
 				if(notifications.length == 0 || notifications[0].time != notification.time)
 					notifications.push(notification);
-				}
+			}
+			if(notifications_.length < 10)	
+				noMoreNotifications();
 			loading.set(false);
 			loaded = true;
 		};
@@ -81,7 +83,7 @@
 				template.html($templateCache.get(NCSigleNTemlpateURL));
 				template = $compile(template)(scope_);
 				setTimeout(function(){
-					template = template.text().trim();
+					template = template.text().trim();	
 					template = template.replace(/\s\s+/g, ' ');
 					new spawnNotification("Ora", template, scope.clickNotification, disabledNotifications);
 				}, 200)
