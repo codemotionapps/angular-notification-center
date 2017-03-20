@@ -65,7 +65,7 @@
 				if(notifications.length == 0 || notifications[0].time != notification.time)
 					notifications.push(notification);
 			}
-			if(notifications_.length < 10)	
+			if(notifications_.length < 10)
 				noMoreNotifications();
 			loading.set(false);
 			loaded = true;
@@ -75,6 +75,9 @@
 			++unreadNotifications.value;
 			notification.ready = notificationToString(notification);
 			notifications.unshift(notification);
+
+			if(allNotificationsLoaded)
+				noMoreNotifications();
 
 			if(showDesktopNotifications){
 				var scope_ = scope.$new();
@@ -159,7 +162,7 @@
 					loading.set(true);					
 				},
 				loadMoreNotifications: function(){
-					if(loading.get()){
+					if(loading.get() || allNotificationsLoaded){
 						return;
 					}
 					loading.set(true);
