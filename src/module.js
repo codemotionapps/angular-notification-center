@@ -11,7 +11,6 @@ import angular from "angular";
 			setNotifications,
 			showDesktopNotifications,
 			stringifier,
-			self = this,
 			permission = false,
 			allNotificationsLoaded = false,
 			notificationsOpen = false,
@@ -129,6 +128,10 @@ import angular from "angular";
 		this.inlineNotification = function(yesorno){
 			showDesktopNotifications = !yesorno;
 		};
+
+		this.setStringifier = function(stringifierFn){
+			stringifier = stringifierFn;
+		};
 		
 		this.$get = function(){
 			//Let's get the first batch of notifications, this is being executed at angular.run();
@@ -164,10 +167,7 @@ import angular from "angular";
 				notificationsNumber : notificationsNumber,
 				noMoreNotifications: noMoreNotifications,
 				loading: loading,
-				unreadNotifications: unreadNotifications,
-				setStringifier: function(stringifier){
-					self.stringifier = stringifier;
-				}
+				unreadNotifications: unreadNotifications
 			};
 		};
 	}).directive("notificationsCenter", ['notification', function(notification){
