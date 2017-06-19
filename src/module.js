@@ -1,22 +1,5 @@
-(function (root, factory) {
-	'use strict';
-	if (typeof module !== 'undefined' && module.exports) {
-		// CommonJS
-		if (typeof angular === 'undefined') {
-			factory(require('angular'));
-		} else {
-			factory(angular);
-		}
-		module.exports = 'ngDialog';
-	} else if (typeof define === 'function' && define.amd) {
-		// AMD
-		define(['angular'], factory);
-	} else {
-		// Global Variables
-		factory(root.angular);
-	}
-}(this, function (angular) {
-	'use strict';
+import angular from "angular";
+
 	angular.module("notificationCenter", [
 
 	]).provider("notification", function(){
@@ -27,6 +10,8 @@
 			newNotification,
 			setNotifications,
 			showDesktopNotifications,
+			stringifier,
+			self = this,
 			permission = false,
 			allNotificationsLoaded = false,
 			notificationsOpen = false,
@@ -38,7 +23,7 @@
 			notifications = [],
 			disabledNotifications = (localStorage !== undefined ? localStorage.getItem('disabledNotifications') === "true" : true), //Private browsing in Safari
 			desktopNotifications = (("Notification" in window) && Notification !== undefined && Notification.permission === "granted") ? true : false;
-				
+			
 		var loading = {
 			value: false,
 			set: function(value){
@@ -61,7 +46,7 @@
 		setNotifications = function(notifications_){
 			for(var index = 0; index < notifications_.length; index++){
 				var notification = notifications_[index];
-				notification.ready = notificationToString(notification);
+				notification.ready = stringifier(notification);
 				if(notifications.length == 0 || notifications[0].time != notification.time)
 					notifications.push(notification);
 			}
@@ -73,7 +58,7 @@
 
 		newNotification = function(notification, scope, $compile, ngToast, $templateCache){
 			++unreadNotifications.value;
-			notification.ready = notificationToString(notification);
+			notification.ready = stringifier(notification);
 			notifications.unshift(notification);
 
 			if(allNotificationsLoaded)
@@ -104,11 +89,7 @@
 						content: template[0].outerHTML
 					});
 				}, 200)
-
-				//if(todoApp.user.getAttribute("notifications_sounds"))
-				//	ngAudio.play("sound/notification.wav");
 			}
-		
 		};
 
 		notificationsNumber = function(number){
@@ -121,7 +102,6 @@
 				callback();
 			});
 		}
-		
 
 		this.setPermission = function(boolean){
 			if(boolean === true && permission !== true){
@@ -184,7 +164,10 @@
 				notificationsNumber : notificationsNumber,
 				noMoreNotifications: noMoreNotifications,
 				loading: loading,
-				unreadNotifications: unreadNotifications
+				unreadNotifications: unreadNotifications,
+				setStringifier: function(stringifier){
+					self.stringifier = stringifier;
+				}
 			};
 		};
 	}).directive("notificationsCenter", ['notification', function(notification){
@@ -212,16 +195,13 @@
 		return {
 			restrict: "A",
 			templateUrl: NCTemplateURL,
-			scope: false,
-			link: function(scope, el,attrs){
-
-			}
+			scope: false
 		};
 	}]).directive("notification", ['notification', function(notification){
 		return {
 			templateUrl: NCSigleNTemlpateURL,
 			scope: false,
-			link: function(scope, el,attrs){
+			link: function(scope, el, attrs){
 				el.addClass("hidden");
 			}
 		};
@@ -232,7 +212,8 @@
 			scope: true
 		};
 	}]);
-}));
+
+export default "notificationCenter";
 /*
 
 {1: Access to variable reference is only possible this way}
